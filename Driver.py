@@ -17,7 +17,6 @@ def main(argc, argv):
 	database_handler = DatabaseHandler(DATABASE_FILENAME, construct_db = construct_db)
 
 	file_handler.close_file()
-	# database_handler.print_all_tables()
 	settings_manager = SettingsManager()
 
 	if sys.platform in supported_platforms:
@@ -27,6 +26,12 @@ def main(argc, argv):
 			settings_manager.start()
 			settings_manager.join()
 
+	database_handler.print_all_tables()
+	print('profile:', database_handler.get_profile_attribute('profile_name'))
+	print('center image:', database_handler.get_profile_attribute('center_image'))
+	print('mirror image:', database_handler.get_profile_attribute('mirror_image'))
+	print('images to download: ', database_handler.get_profile_attribute('images_to_download'))
+
 	"""
 	timer = Timer(5)
 	while True:
@@ -34,5 +39,19 @@ def main(argc, argv):
 		timer.start()
 		
 	"""
+
+"""
+	profile_name	TEXT DEFAULT 'Default'
+	center_image	INT DEFAULT 0,
+	mirror_image	INT DEFAULT 0,
+	fill_voidspace	INT DEFAULT 0,
+	solid_fill		INT DEFAULT 0,
+	random_fill		INT DEFAULT 0,
+	smart_fill		INT DEFAULT 0,
+	max_scale_factor	REAL DEFAULT 1.7,
+	chaos_tolerance		INT DEFAULT 100,
+	images_to_download	INT DEFAULT 50,
+	download_interval	INT DEFAULT 86400
+"""
 
 main(len(sys.argv), sys.argv)

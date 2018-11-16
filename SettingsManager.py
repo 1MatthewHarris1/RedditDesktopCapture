@@ -29,3 +29,26 @@ class SettingsManager(threading.Thread):
 		root.title("Sample Application")
 		root.mainloop() # Wait for events, until "quit()" method is called
 		print("done")
+
+
+"""
+CREATE TABLE Subreddits
+(
+	subreddit	text UNIQUE
+);
+CREATE TABLE ProfileInfo
+(
+	profile_name	TEXT DEFAULT 'Default',
+	center_image	INT DEFAULT 0,
+	mirror_image	INT DEFAULT 0,
+	fill_voidspace	INT DEFAULT 0,
+	solid_fill		INT DEFAULT 0,
+	random_fill		INT DEFAULT 0,
+	smart_fill		INT DEFAULT 0,
+	max_scale_factor	REAL DEFAULT 1.7,
+	chaos_tolerance		INT DEFAULT 100,
+	images_to_download	INT DEFAULT 50,
+	download_interval	INT DEFAULT 86400
+);
+INSERT INTO ProfileInfo DEFAULT VALUES
+"""

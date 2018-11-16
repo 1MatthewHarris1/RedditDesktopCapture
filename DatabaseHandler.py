@@ -7,6 +7,7 @@ CREATE TABLE Subreddits
 );
 CREATE TABLE ProfileInfo
 (
+	profile_name	TEXT DEFAULT 'Default',
 	center_image	INT DEFAULT 0,
 	mirror_image	INT DEFAULT 0,
 	fill_voidspace	INT DEFAULT 0,
@@ -18,6 +19,7 @@ CREATE TABLE ProfileInfo
 	images_to_download	INT DEFAULT 50,
 	download_interval	INT DEFAULT 86400
 );
+INSERT INTO ProfileInfo DEFAULT VALUES
 """
 
 class DatabaseHandler:
@@ -34,7 +36,7 @@ class DatabaseHandler:
 		for row in self.__database.execute("SELECT * FROM sqlite_master WHERE type='table';"):
 			self.__print_table(str(row[1]))
 
-	def __print_table(self, table_name: str):
+	def __print_table(self, table_name):
 
 		display = "{}: ".format(table_name)
 		print(display)
@@ -49,7 +51,6 @@ class DatabaseHandler:
 
 	def construct_database(self):
 
-		# executescript?
 		self.__cursor.executescript(database_schema)
 
 	def add_subreddit(self, subreddit_name):
@@ -60,3 +61,37 @@ class DatabaseHandler:
 		'''.format(subreddit_name)
 		self.__cursor.execute(sql_query)
 
+	def get_subreddit_list(self):
+
+		sql_query = '''
+		SELECT *
+		FROM Subreddits
+		'''
+
+		sub_list = []
+		for row in self.__cursor.execute(sql_query):
+			sub_list.append(row[0])
+
+		return sub_list
+
+	def get_profile_attribute(self, attr_name):
+
+		sql_query = '''
+		SELECT {0}
+		FROM ProfileInfo
+		'''.format(attr_name)
+
+		attr_list = []
+		for row in self.__cursor.execute(sql_query):
+			attr_list.append(row[0])
+
+		return attr_list
+
+	def set_profile_attrivute(self, attr_name, value):
+
+		sql_query = '''
+		UPDATE ProfileInfo
+		SET {0} = '{1}'
+		'''.format(attr_name, value)
+
+		self.__cursor.execute(sql_query)
