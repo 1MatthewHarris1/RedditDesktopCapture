@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import sys
 from SettingsManager import SettingsManager
 from FileHandler import FileHandler
@@ -15,10 +17,15 @@ def main(argc, argv):
 	database_handler = DatabaseHandler(DATABASE_FILENAME, construct_db = construct_db)
 
 	file_handler.close_file()
-	database_handler.print_all_tables()
+	# database_handler.print_all_tables()
 	settings_manager = SettingsManager()
-	settings_manager.start()
-	settings_manager.join()
+
+	if sys.platform in supported_platforms:
+		if sys.platform == 'darwin':
+			settings_manager.run()
+		else:
+			settings_manager.start()
+			settings_manager.join()
 
 	"""
 	timer = Timer(5)

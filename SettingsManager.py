@@ -12,7 +12,7 @@ class SettingsManager(threading.Thread):
 
 	class Application(Frame):
 
-		def __init__(self, parent=None):
+		def __init__(self, parent=None, height = 50, width = 50):
 			# always be sure to do this with tkinter child classes...
 			super().__init__(parent)
 			quitButton = Button(self, text="Goodbye, World!",
@@ -22,9 +22,10 @@ class SettingsManager(threading.Thread):
 
 	def run(self):
 
+		print('Application window should open...')
 		root = Tk()
 		app = self.Application(root) # Instantiate the application class
 		app.grid() # "grid" is a Tkinter geometry manager
-		root.title("Sample application")
+		root.title("Sample Application")
 		root.mainloop() # Wait for events, until "quit()" method is called
 		print("done")
