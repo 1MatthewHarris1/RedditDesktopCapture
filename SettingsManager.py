@@ -1,4 +1,4 @@
-from tkinter import Frame, Button, Tk
+from tkinter import Frame, Button, Entry, Tk
 import threading
 
 """
@@ -10,15 +10,53 @@ class SettingsManager(threading.Thread):
 	def __init__(self):
 		super().__init__()
 
+
 	class Application(Frame):
 
-		def __init__(self, parent=None, height = 50, width = 50):
+		class SubField:
+			
+			def __init__(self, entry = None, button = None, text = ''):
+
+				self.entry = entry
+				self.button = button
+				self.textvariable = text
+				entry.textvariable = self.textvariable
+
+		def __init__(self, parent=None):
 			# always be sure to do this with tkinter child classes...
 			super().__init__(parent)
-			quitButton = Button(self, text="Goodbye, World!",
-								command=self.quit,
-								font=('times', 24))
-			quitButton.grid()
+			self.sub_list = []
+			self.initialize_widgets()
+
+		def initialize_widgets(self):
+
+			self.add_text_field()
+
+		def remove_text_field(self):
+			pass
+
+		def add_text_field(self):
+
+			self.grid_forget()
+			new_button = Button(self, text = '+', command = self.add_text_field, font = ('times', 11))
+			new_text_entry = Entry(self)
+			new_subfield = self.SubField(entry = new_text_entry, button = new_button)
+			self.sub_list.append(new_subfield)
+
+			row = 0
+			for x in range(len(self.sub_list)):
+
+				subfield = self.sub_list[x]
+				subfield.entry.grid(row = row, column = 0)
+				subfield.button.grid(row = row, column = 1)
+				if x < len(self.sub_list) - 1:
+					subfield.button.command = self.remove_text_field
+					subfield.button.text = '-'
+					row += 1
+
+			return
+			
+				
 
 	def run(self):
 
