@@ -14,6 +14,8 @@ class SettingsManager(threading.Thread):
 	class Application(Frame):
 
 		class SubField:
+
+			DISABLED = 'disabled'
 			
 			def __init__(self, entry = None, button = None, text = ''):
 
@@ -32,41 +34,50 @@ class SettingsManager(threading.Thread):
 
 			self.add_text_field()
 
-		def remove_text_field(self):
-			pass
+		def remove_text_field(self, sub):
+
+			if sub in self.sub_list:
+				self.sub_list.remove(sub)
+
+			self.redraw()
 
 		def add_text_field(self):
 
-			self.grid_forget()
 			new_button = Button(self, text = '+', command = self.add_text_field, font = ('times', 11))
 			new_text_entry = Entry(self)
 			new_subfield = self.SubField(entry = new_text_entry, button = new_button)
 			self.sub_list.append(new_subfield)
 
+			self.redraw()
+
+			return
+
+		def redraw(self):
+
+			self.grid_forget()
 			row = 0
 			for x in range(len(self.sub_list)):
-
 				subfield = self.sub_list[x]
 				subfield.entry.grid(row = row, column = 0)
 				subfield.button.grid(row = row, column = 1)
 				if x < len(self.sub_list) - 1:
-					subfield.button.command = self.remove_text_field
-					subfield.button.text = '-'
+					subfield.button['command'] = lambda sub = subfield: self.remove_text_field(sub)# self.remove_text_field
+					# lambda button = b: self.player_move(button)
+					subfield.button['text'] = '-'
+					subfield.entry['state'] = self.SubField.DISABLED
 					row += 1
 
-			return
+			self.grid()
 			
 				
 
 	def run(self):
 
-		print('Application window should open...')
 		root = Tk()
 		app = self.Application(root) # Instantiate the application class
 		app.grid() # "grid" is a Tkinter geometry manager
 		root.title("Sample Application")
 		root.mainloop() # Wait for events, until "quit()" method is called
-		print("done")
 
 
 """
