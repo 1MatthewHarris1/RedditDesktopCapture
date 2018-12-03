@@ -17,7 +17,21 @@ def main(argc, argv):
 	database_handler = DatabaseHandler(DATABASE_FILENAME, construct_db = construct_db)
 
 	file_handler.close_file()
-	settings_manager = SettingsManager()
+
+
+	settings_dict = {	'profile_name':database_handler.get_profile_attribute('profile_name'),
+				'center_image':database_handler.get_profile_attribute('center_image'),
+				'mirror_image':database_handler.get_profile_attribute('mirror_image'),
+				'fill_voidapce':database_handler.get_profile_attribute('fill_voidspace'),
+				'fill_behavior': {	'solid_fill':database_handler.get_profile_attribute('solid_fill'),
+							'random_fill':database_handler.get_profile_attribute('random_fill'),
+							'smart_fill':database_handler.get_profile_attribute('smart_fill')},
+				'max_scale_factor':database_handler.get_profile_attribute('max_scale_factor'),
+				'chaos_tolerance':database_handler.get_profile_attribute('chaos_tolerance'),
+				'images_to_download':database_handler.get_profile_attribute('images_to_download'),
+				'download_interval':database_handler.get_profile_attribute('download_interval')}
+
+	settings_manager = SettingsManager(settings_dict = settings_dict)
 
 	if sys.platform in supported_platforms:
 		if sys.platform == 'darwin':
@@ -26,11 +40,13 @@ def main(argc, argv):
 			settings_manager.start()
 			settings_manager.join()
 
+	"""
 	database_handler.print_all_tables()
 	print('profile:', database_handler.get_profile_attribute('profile_name'))
 	print('center image:', database_handler.get_profile_attribute('center_image'))
 	print('mirror image:', database_handler.get_profile_attribute('mirror_image'))
 	print('images to download: ', database_handler.get_profile_attribute('images_to_download'))
+	"""
 
 	"""
 	timer = Timer(5)
