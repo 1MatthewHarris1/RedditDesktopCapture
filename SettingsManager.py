@@ -31,11 +31,11 @@ class SettingsManager(threading.Thread):
 
 		class CheckField:
 		
-			def __init__(self, text = None, state = 0, padding = 0):
+			def __init__(self, master = None, text = None, state = 0, padding = 0):
 				
 				self.var = IntVar(state)
 				self.padding = padding
-				self.button = Checkbutton(text = text, variable = self.var, onvalue = 1, offvalue = 0)
+				self.button = Checkbutton(master, text = text, variable = self.var, onvalue = 1, offvalue = 0)
 
 		class TextField:
 
@@ -72,7 +72,6 @@ class SettingsManager(threading.Thread):
 			self.add_sub_field()
 
 			self.settings_dict_init(d = self.settings_dict)
-
 
 		# Make this examine the various fields and correlate them to a specific type. Behave according to type
 		def settings_dict_init(self, d = None, padding = 0):
@@ -118,7 +117,7 @@ class SettingsManager(threading.Thread):
 
 		def add_checkbutton(self, text = None, padding = 0):
 
-			new_checkbutton = self.CheckField(text = text, padding = padding)
+			new_checkbutton = self.CheckField(master = self, text = text, padding = padding)
 			self.settings_list.append(new_checkbutton)
 
 			return
@@ -127,7 +126,7 @@ class SettingsManager(threading.Thread):
 
 			self.grid_forget()
 
-			self.sub_label.grid(row = 0, column = 0)
+			self.sub_label.grid(row = 0, column = 0, sticky = WEST)
 
 			row = 1
 			for x in range(len(self.sub_list)):
@@ -141,7 +140,7 @@ class SettingsManager(threading.Thread):
 				row += 1
 
 			row += 2
-			self.settings_label.grid(row = row, column = 0)
+			self.settings_label.grid(row = row, column = 0, sticky = WEST)
 			row += 1
 			for x in range(len(self.settings_list)):
 				

@@ -36,9 +36,12 @@ def main(argc, argv):
 	if sys.platform in supported_platforms:
 		if sys.platform == 'darwin':
 			settings_manager.run()
-		else:
+		elif sys.platform == 'win32':
 			settings_manager.start()
 			settings_manager.join()
+		else:
+			print('Unknown platform. Exiting...')
+			sys.exit(1)
 
 	"""
 	database_handler.print_all_tables()
