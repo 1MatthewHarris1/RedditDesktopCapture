@@ -8,19 +8,26 @@ class FileHandler:
 		self.access_type = access_type
 		self.file = None
 
-	def open_file(self):
+	def open_existing_file(self):
 
 			r = False
 			if path.exists(self.filename) and path.isfile(self.filename):
-				try:
-					self.file = open(self.filename, self.access_type)
-					r = True
-				except IOError as e:
-					print("IOError({0}): {1}".format(e.errno, e.strerror))
-				except Exception as e:
-					print("Unknown Error in FileHandler")
+				r = self.open_new_file()
 
 			return r
+
+	def open_new_file(self):
+
+		r = False
+		try:
+			self.file = open(self.filename, self.access_type)
+			r = True
+		except IOError as e:
+			print("IOError({0}): {1}".format(e.errno, e.strerror))
+		except Exception as e:
+			print("Unknown Error in FileHandler")
+		
+		return r
 
 	def close_file(self):
 

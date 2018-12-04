@@ -26,14 +26,14 @@ class SettingsManager(threading.Thread):
 
 				self.entry = entry
 				self.button = button
-				self.textvariable = StringVar(text)
+				self.textvariable = text # StringVar(text)
 				entry.textvariable = self.textvariable
 
 		class CheckField:
 		
 			def __init__(self, master = None, text = None, state = 0, padding = 0):
 				
-				self.var = IntVar(state)
+				self.var = state # IntVar(state)
 				self.padding = padding
 				self.button = Checkbutton(master, text = text, variable = self.var, onvalue = 1, offvalue = 0)
 
@@ -41,7 +41,7 @@ class SettingsManager(threading.Thread):
 
 			def __init__(self, text = None, entry = None, label = None, padding = 0):
 
-				self.var = StringVar()
+				self.var = "" # StringVar()
 				self.padding = padding
 				entry.textvariable = self.var # Entry(text = text, textvariable = self.var, width = 5)
 				self.entry = entry
@@ -49,10 +49,11 @@ class SettingsManager(threading.Thread):
 				self.label = label
 				
 
-		def __init__(self, parent = None, settings_dict = None):
+		def __init__(self, parent = None, settings_dict = None, database = None):
 			# always be sure to do this with tkinter child classes...
 			super().__init__(parent)
 
+			self.database = database
 			self.settings_dict = settings_dict
 			self.sub_list = []
 			self.settings_list = []
@@ -78,7 +79,6 @@ class SettingsManager(threading.Thread):
 		# Make this examine the various fields and correlate them to a specific type. Behave according to type
 		def settings_dict_init(self, d = None, padding = 0):
 
-			print(d)
 			for element in d:
 				if type(d[element]) is dict:
 					self.settings_dict_init(d = d[element], padding = padding + self.SUBFIELD_PADDING)
@@ -136,7 +136,6 @@ class SettingsManager(threading.Thread):
 
 			self.sub_label.grid(row = 0, column = 0, sticky = WEST, pady = 5)
 
-			print('At time of this drawing, sub_list has: {0} elements'.format(len(self.sub_list)))
 			row = 1
 			for x in range(len(self.sub_list)):
 				subfield = self.sub_list[x]
@@ -175,17 +174,17 @@ class SettingsManager(threading.Thread):
 			for element in self.sub_list:
 				subreddits.append(element.entry.textvariable)
 
-			self.settings_dict['profile_name'] = self.settings_list[0]
-			self.settings_dict['center_image'] = self.settings_list[1]
-			self.settings_dict['mirror_image'] = self.settings_list[2]
-			self.settings_dict['fill_voidspace'] = self.settings_list[3]
-			self.settings_dict['solid_fill'] = self.settings_list[3]['solid_fill']
-			self.settings_dict['random_fill'] = self.settings_list[3]['random_fill']
-			self.settings_dict['smart_fill'] = self.settings_list[3]['smart_fill']
-			self.settings_dict['max_scale_factor'] = self.settings_list[4]
-			self.settings_dict['chaos_tolerance'] = self.settings_list[5]
-			self.settings_dict['images_to_download'] = self.settings_list[6]
-			self.settings_dict['download_interval'] = self.settings_list[7]
+			self.settings_dict['profile_name'] = str(self.settings_list[0].entry.get())
+			self.settings_dict['center_image'] = self.settings_list[1].var
+			self.settings_dict['mirror_image'] = self.settings_list[2].var
+			self.settings_dict['fill_voidspace'] = self.settings_list[3].var
+			self.settings_dict['fill_behavior']['solid_fill'] = self.settings_list[4].var
+			self.settings_dict['fill_behavior']['random_fill'] = self.settings_list[5].var
+			self.settings_dict['fill_behavior']['smart_fill'] = self.settings_list[6].var
+			self.settings_dict['max_scale_factor'] = float(self.settings_list[7].entry.get())
+			self.settings_dict['chaos_tolerance'] = int(self.settings_list[8].entry.get())
+			self.settings_dict['images_to_download'] = int(self.settings_list[9].entry.get())
+			self.settings_dict['download_interval'] = int(self.settings_list[10].entry.get())
 
 			self.database.update_field_value('subreddits', subreddits)
 
@@ -198,7 +197,7 @@ class SettingsManager(threading.Thread):
 	def run(self):
 
 		root = Tk()
-		app = self.Application(root, settings_dict = self.settings_dict) # Instantiate the application class
+		app = self.Application(root, settings_dict = self.settings_dict, database = self.database) # Instantiate the application class
 		# app.grid()
 		root.title("Reddit Desktop Capture")
 		root.mainloop()
