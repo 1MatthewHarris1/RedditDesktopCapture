@@ -1,4 +1,4 @@
-from tkinter import Frame, Button, Entry, Tk, Checkbutton, Label, StringVar, IntVar, W as WEST
+from tkinter import Frame, Button, Entry, Tk, Checkbutton, Label, StringVar, IntVar, W as WEST, E as EAST
 import threading
 
 """
@@ -15,6 +15,7 @@ class SettingsManager(threading.Thread):
 	class Application(Frame):
 
 		SUBFIELD_PADDING = 10
+		DEFAULT_TEXT_ENTRY_WIDTH = 8
 
 		class SubField:
 
@@ -34,45 +35,67 @@ class SettingsManager(threading.Thread):
 				
 				self.var = IntVar(state)
 				self.padding = padding
-				self.checkbutton = Checkbutton(text = text, variable = self.var, onvalue = 1, offvalue = 0)
+				self.button = Checkbutton(text = text, variable = self.var, onvalue = 1, offvalue = 0)
+
+		class TextField:
+
+			def __init__(self, text = None, entry = None, label = None, padding = 0):
+
+				self.var = StringVar()
+				self.padding = padding
+				entry.textvariable = self.var # Entry(text = text, textvariable = self.var, width = 5)
+				self.entry = entry
+				self.entry.insert(0, text)
+				self.label = label
 				
 
 		def __init__(self, parent = None, settings_dict = None):
 			# always be sure to do this with tkinter child classes...
 			super().__init__(parent)
+
 			self.settings_dict = settings_dict
 			self.sub_list = []
-			self.check_list = []
+			self.settings_list = []
 			self.sub_label = None
 			self.settings_label = None
+			self.start_button = None
+			self.quit_button = None
+
 			self.initialize_widgets()
 
 		def initialize_widgets(self):
 
 			self.sub_label = Label(self, text = 'Subreddits', font = ('times', 18))
 			self.settings_label = Label(self, text = 'Settings', font = ('times', 18))
-			self.add_text_field()
+			self.start_button = Button(self, text = 'Launch', command = self.start, font = ('times', 18))
+			self.quit_button = Button(self, text = 'Exit', command = self.master.destroy, font = ('times', 18))
+			self.add_sub_field()
 
-			self.dict_checkbutton_init(d = self.settings_dict)
+			self.settings_dict_init(d = self.settings_dict)
 
-		def dict_checkbutton_init(self, d = None, padding = 0):
+
+		# Make this examine the various fields and correlate them to a specific type. Behave according to type
+		def settings_dict_init(self, d = None, padding = 0):
 
 			for element in d:
 				if type(d[element]) is dict:
-					self.dict_checkbutton_init(d = d[element], padding = padding + self.SUBFIELD_PADDING)
-				else:
+					self.settings_dict_init(d = d[element], padding = padding + self.SUBFIELD_PADDING)
+				elif d[element][0] == 'checkbutton':
 					self.add_checkbutton(text = element, padding = padding)
+				else:
+					self.add_text_field(text = d[element][1], label_text = element, padding = padding)
 
+			self.redraw()
 			return
 
-		"""
-		def enable_button(self, button):
-			
-			print('button enabled')
-			button['state'] = SettingsManager.Subfield.NORMAL
-		"""
+		def add_text_field(self, text = None, label_text = None, padding = 0):
 
-		def remove_text_field(self, sub):
+			new_entry = Entry(self, width = self.DEFAULT_TEXT_ENTRY_WIDTH)
+			new_label = Label(self, text = label_text)
+			new_text_field = self.TextField(text = text, entry = new_entry, label = new_label)
+			self.settings_list.append(new_text_field)
+
+		def remove_sub_field(self, sub):
 
 			if sub in self.sub_list:
 				self.sub_list.remove(sub)
@@ -81,9 +104,10 @@ class SettingsManager(threading.Thread):
 
 			return
 
-		def add_text_field(self):
+		# Consider a change to this paradigm. Fields should only go into the list after the '+' button is pressed
+		def add_sub_field(self):
 
-			new_button = Button(self, text = '+', command = self.add_text_field, font = ('times', 11))
+			new_button = Button(self, text = '+', command = self.add_sub_field, font = ('times', 11))
 			new_text_entry = Entry(self)
 			new_subfield = self.SubField(entry = new_text_entry, button = new_button)
 			self.sub_list.append(new_subfield)
@@ -95,40 +119,51 @@ class SettingsManager(threading.Thread):
 		def add_checkbutton(self, text = None, padding = 0):
 
 			new_checkbutton = self.CheckField(text = text, padding = padding)
-			self.check_list.append(new_checkbutton)
-
-			self.redraw()
+			self.settings_list.append(new_checkbutton)
 
 			return
 
 		def redraw(self):
 
-			# self.grid_forget()
+			self.grid_forget()
+
 			self.sub_label.grid(row = 0, column = 0)
+
 			row = 1
 			for x in range(len(self.sub_list)):
 				subfield = self.sub_list[x]
 				subfield.entry.grid(row = row, column = 0)
 				subfield.button.grid(row = row, column = 1)
 				if x < len(self.sub_list) - 1:
-					subfield.button['command'] = lambda sub = subfield: self.remove_text_field(sub)
+					subfield.button['command'] = lambda sub = subfield: self.remove_sub_field(sub)
 					subfield.button['text'] = '-'
 					subfield.entry['state'] = self.SubField.DISABLED
 				row += 1
-				"""
-				else:
-					subfield.button['state'] = self.SubField.DISABLED
-				"""
+
 			row += 2
 			self.settings_label.grid(row = row, column = 0)
 			row += 1
-			for x in range(len(self.check_list)):
-				self.check_list[x].checkbutton.grid(row = row, column = 0, sticky = WEST, padx = self.check_list[x].padding)
+			for x in range(len(self.settings_list)):
+				
+				if type(self.settings_list[x]) == self.CheckField:
+					self.settings_list[x].button.grid(row = row, column = 0, sticky = WEST, padx = self.settings_list[x].padding)
+				else:
+					self.settings_list[x].entry.grid(row = row, column = 0, sticky = WEST, padx = self.settings_list[x].padding)
+					self.settings_list[x].label.grid(row = row, column = 1, sticky = WEST, padx = self.settings_list[x].padding)
+
 				row += 1
+			
+			row += 2
+			self.quit_button.grid(row = row, column = 0, sticky = WEST)
+			self.start_button.grid(row = row, column = 1, sticky = EAST)
 
 			self.grid()
 			
 			return
+
+		def start(self):
+
+			print('passing control to reddit image scraper module')
 
 	def run(self):
 

@@ -19,17 +19,17 @@ def main(argc, argv):
 	file_handler.close_file()
 
 
-	settings_dict = {	'profile_name':database_handler.get_profile_attribute('profile_name'),
-				'center_image':database_handler.get_profile_attribute('center_image'),
-				'mirror_image':database_handler.get_profile_attribute('mirror_image'),
-				'fill_voidapce':database_handler.get_profile_attribute('fill_voidspace'),
-				'fill_behavior': {	'solid_fill':database_handler.get_profile_attribute('solid_fill'),
-							'random_fill':database_handler.get_profile_attribute('random_fill'),
-							'smart_fill':database_handler.get_profile_attribute('smart_fill')},
-				'max_scale_factor':database_handler.get_profile_attribute('max_scale_factor'),
-				'chaos_tolerance':database_handler.get_profile_attribute('chaos_tolerance'),
-				'images_to_download':database_handler.get_profile_attribute('images_to_download'),
-				'download_interval':database_handler.get_profile_attribute('download_interval')}
+	settings_dict = {	'profile_name':('text', database_handler.get_profile_attribute('profile_name')),
+				'center_image':('checkbutton', database_handler.get_profile_attribute('center_image')),
+				'mirror_image':('checkbutton',database_handler.get_profile_attribute('mirror_image')),
+				'fill_voidapce':('checkbutton', database_handler.get_profile_attribute('fill_voidspace')),
+				'fill_behavior': {	'solid_fill':('checkbutton', database_handler.get_profile_attribute('solid_fill')),
+							'random_fill':('checkbutton', database_handler.get_profile_attribute('random_fill')),
+							'smart_fill':('checkbutton', database_handler.get_profile_attribute('smart_fill'))},
+				'max_scale_factor':('number', database_handler.get_profile_attribute('max_scale_factor')),
+				'chaos_tolerance':('number', database_handler.get_profile_attribute('chaos_tolerance')),
+				'images_to_download':('number', database_handler.get_profile_attribute('images_to_download')),
+				'download_interval':('number', database_handler.get_profile_attribute('download_interval'))}
 
 	settings_manager = SettingsManager(settings_dict = settings_dict)
 
