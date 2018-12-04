@@ -4,6 +4,7 @@ import sys
 from SettingsManager import SettingsManager
 from FileHandler import FileHandler
 from DatabaseHandler import DatabaseHandler
+from JsonHandler import JsonHandler
 from Timer import Timer
 from GlobalData import *
 
@@ -16,9 +17,24 @@ def main(argc, argv):
 
 	database_handler = DatabaseHandler(DATABASE_FILENAME, construct_db = construct_db)
 
-	file_handler.close_file()
+	default_settings = {	'subreddits':{},
+							'profile_name':'Default',
+							'center_image':False,
+							'mirror_image':False,
+							'fill_voidspace':False,
+							'fill_behavior':{	'solid_fill':False,
+												'random_fill':False,
+												'smart_fill':False},
+							'max_scale_factor':1.7,
+							'chaos_tolerance':100,
+							'images_to_download':50,
+							'download_interval':86400}
 
+	json_handler = JsonHandler(filename = DATABASE_FILENAME, json_data = default_settings)
 
+	# file_handler.close_file()
+
+	"""
 	settings_dict = {	'profile_name':('text', database_handler.get_profile_attribute('profile_name')),
 				'center_image':('checkbutton', database_handler.get_profile_attribute('center_image')),
 				'mirror_image':('checkbutton',database_handler.get_profile_attribute('mirror_image')),
@@ -30,8 +46,9 @@ def main(argc, argv):
 				'chaos_tolerance':('number', database_handler.get_profile_attribute('chaos_tolerance')),
 				'images_to_download':('number', database_handler.get_profile_attribute('images_to_download')),
 				'download_interval':('number', database_handler.get_profile_attribute('download_interval'))}
+	"""
 
-	settings_manager = SettingsManager(settings_dict = settings_dict)
+	settings_manager = SettingsManager(settings_dict = json_handler.json_data, database = json_handler)
 
 	if sys.platform in supported_platforms:
 		if sys.platform == 'darwin':

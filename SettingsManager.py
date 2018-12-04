@@ -7,10 +7,10 @@ cleaner if it utilizes its own thread
 """
 class SettingsManager(threading.Thread):
 
-	def __init__(self, settings_dict = None):
+	def __init__(self, settings_dict = None, database = None):
 		super().__init__()
 		self.settings_dict = settings_dict
-
+		self.database = database
 
 	class Application(Frame):
 
@@ -59,6 +59,7 @@ class SettingsManager(threading.Thread):
 			self.sub_label = None
 			self.settings_label = None
 			self.start_button = None
+			self.save_profile_button = None
 			self.quit_button = None
 
 			self.initialize_widgets()
@@ -68,6 +69,7 @@ class SettingsManager(threading.Thread):
 			self.sub_label = Label(self, text = 'Subreddits', font = ('times', 18))
 			self.settings_label = Label(self, text = 'Settings', font = ('times', 18))
 			self.start_button = Button(self, text = 'Launch', command = self.start, font = ('times', 18))
+			self.save_profile_button = Button(self, text = 'Save Profile', command = self.save_profile_data, font = ('times', 18))
 			self.quit_button = Button(self, text = 'Exit', command = self.master.destroy, font = ('times', 18))
 			self.add_sub_field()
 
@@ -76,13 +78,17 @@ class SettingsManager(threading.Thread):
 		# Make this examine the various fields and correlate them to a specific type. Behave according to type
 		def settings_dict_init(self, d = None, padding = 0):
 
+			print(d)
 			for element in d:
 				if type(d[element]) is dict:
 					self.settings_dict_init(d = d[element], padding = padding + self.SUBFIELD_PADDING)
-				elif d[element][0] == 'checkbutton':
+				elif element in ['center_image', 'mirror_image', 'fill_voidspace', 'solid_fill', 'smart_fill', 'random_fill']:
 					self.add_checkbutton(text = element, padding = padding)
+				elif element in ['download_interval', 'profile_name', 'max_scale_factor', 'chaos_tolerance',
+								 'images_to_download']:
+					self.add_text_field(text = d[element], label_text = element, padding = padding)
 				else:
-					self.add_text_field(text = d[element][1], label_text = element, padding = padding)
+					print('{0} has undefined behavior'.format(element))
 
 			self.redraw()
 			return
@@ -98,6 +104,8 @@ class SettingsManager(threading.Thread):
 
 			if sub in self.sub_list:
 				self.sub_list.remove(sub)
+				sub.button.grid_forget()
+				sub.entry.grid_forget()
 
 			self.redraw()
 
@@ -124,23 +132,24 @@ class SettingsManager(threading.Thread):
 
 		def redraw(self):
 
-			self.grid_forget()
+			# self.grid_forget()
 
-			self.sub_label.grid(row = 0, column = 0, sticky = WEST)
+			self.sub_label.grid(row = 0, column = 0, sticky = WEST, pady = 5)
 
+			print('At time of this drawing, sub_list has: {0} elements'.format(len(self.sub_list)))
 			row = 1
 			for x in range(len(self.sub_list)):
 				subfield = self.sub_list[x]
 				subfield.entry.grid(row = row, column = 0)
-				subfield.button.grid(row = row, column = 1)
+				subfield.button.grid(row = row, column = 1, sticky = WEST)
 				if x < len(self.sub_list) - 1:
 					subfield.button['command'] = lambda sub = subfield: self.remove_sub_field(sub)
 					subfield.button['text'] = '-'
 					subfield.entry['state'] = self.SubField.DISABLED
 				row += 1
 
-			row += 2
-			self.settings_label.grid(row = row, column = 0, sticky = WEST)
+			row += 1
+			self.settings_label.grid(row = row, column = 0, sticky = WEST, pady = 5)
 			row += 1
 			for x in range(len(self.settings_list)):
 				
@@ -152,13 +161,35 @@ class SettingsManager(threading.Thread):
 
 				row += 1
 			
-			row += 2
-			self.quit_button.grid(row = row, column = 0, sticky = WEST)
-			self.start_button.grid(row = row, column = 1, sticky = EAST)
+			self.quit_button.grid(row = row, column = 0, sticky = WEST, pady = 10)
+			self.save_profile_button.grid(row = row, column = 1)
+			self.start_button.grid(row = row, column = 2, sticky = EAST)
 
 			self.grid()
 			
 			return
+
+		def save_profile_data(self):
+
+			subreddits = []
+			for element in self.sub_list:
+				subreddits.append(element.entry.textvariable)
+
+			self.settings_dict['profile_name'] = self.settings_list[0]
+			self.settings_dict['center_image'] = self.settings_list[1]
+			self.settings_dict['mirror_image'] = self.settings_list[2]
+			self.settings_dict['fill_voidspace'] = self.settings_list[3]
+			self.settings_dict['solid_fill'] = self.settings_list[3]['solid_fill']
+			self.settings_dict['random_fill'] = self.settings_list[3]['random_fill']
+			self.settings_dict['smart_fill'] = self.settings_list[3]['smart_fill']
+			self.settings_dict['max_scale_factor'] = self.settings_list[4]
+			self.settings_dict['chaos_tolerance'] = self.settings_list[5]
+			self.settings_dict['images_to_download'] = self.settings_list[6]
+			self.settings_dict['download_interval'] = self.settings_list[7]
+
+			self.database.update_field_value('subreddits', subreddits)
+
+			self.database.output_file_contents()
 
 		def start(self):
 
@@ -171,13 +202,7 @@ class SettingsManager(threading.Thread):
 		# app.grid()
 		root.title("Reddit Desktop Capture")
 		root.mainloop()
-
-
 """
-CREATE TABLE Subreddits
-(
-	subreddit	text UNIQUE
-);
 CREATE TABLE ProfileInfo
 (
 	profile_name	TEXT DEFAULT 'Default',
