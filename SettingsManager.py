@@ -26,8 +26,10 @@ class SettingsManager(threading.Thread):
 
 				self.entry = entry
 				self.button = button
-				self.textvariable = text # StringVar(text)
-				entry.textvariable = self.textvariable
+				self.textvariable = "" # StringVar(text)
+				self.entry.textvariable = self.textvariable
+				# print('text should be: {0}'.format(text))
+				self.entry.insert(0, text)
 
 		class CheckField:
 		
@@ -72,7 +74,9 @@ class SettingsManager(threading.Thread):
 			self.start_button = Button(self, text = 'Launch', command = self.start, font = ('times', 18))
 			self.save_profile_button = Button(self, text = 'Save Profile', command = self.save_profile_data, font = ('times', 18))
 			self.quit_button = Button(self, text = 'Exit', command = self.master.destroy, font = ('times', 18))
-			self.add_sub_field()
+
+			for element in self.settings_dict['subreddits']:
+				self.add_sub_field(text = element)
 
 			self.settings_dict_init(d = self.settings_dict)
 
@@ -112,11 +116,11 @@ class SettingsManager(threading.Thread):
 			return
 
 		# Consider a change to this paradigm. Fields should only go into the list after the '+' button is pressed
-		def add_sub_field(self):
+		def add_sub_field(self, text = None):
 
 			new_button = Button(self, text = '+', command = self.add_sub_field, font = ('times', 11))
 			new_text_entry = Entry(self)
-			new_subfield = self.SubField(entry = new_text_entry, button = new_button)
+			new_subfield = self.SubField(entry = new_text_entry, button = new_button, text = text)
 			self.sub_list.append(new_subfield)
 
 			self.redraw()
@@ -172,7 +176,7 @@ class SettingsManager(threading.Thread):
 
 			subreddits = []
 			for element in self.sub_list:
-				subreddits.append(element.entry.textvariable)
+				subreddits.append(str(element.entry.get()))
 
 			self.settings_dict['profile_name'] = str(self.settings_list[0].entry.get())
 			self.settings_dict['center_image'] = self.settings_list[1].var
@@ -192,6 +196,7 @@ class SettingsManager(threading.Thread):
 
 		def start(self):
 
+			self.save_profile_data()
 			print('passing control to reddit image scraper module')
 
 	def run(self):
