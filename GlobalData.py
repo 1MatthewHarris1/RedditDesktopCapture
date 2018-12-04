@@ -1,4 +1,3 @@
-# DATABASE_FILENAME = './RDC.sqlite3'
 DATABASE_FILENAME = './ProfileData.json'
 valid_image_extensions = ['png', 'jpg', 'jpeg', 'tiff', 'bmp']
 downloaded_image_folder_location = 'Downloaded'

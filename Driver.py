@@ -3,7 +3,8 @@
 import sys
 from SettingsManager import SettingsManager
 from FileHandler import FileHandler
-from DatabaseHandler import DatabaseHandler
+# from DatabaseHandler import DatabaseHandler
+from RedditInterface import RedditInterface
 from JsonHandler import JsonHandler
 from Timer import Timer
 from GlobalData import *
@@ -36,6 +37,9 @@ def main(argc, argv):
 		else:
 			print('Unknown platform. Exiting...')
 			sys.exit(1)
+
+	reddit_interface = RedditInterface(settings_dict = json_handler.json_data)
+	reddit_interface.get_images()
 
 	"""
 	timer = Timer(5)

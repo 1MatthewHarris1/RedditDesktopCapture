@@ -1,4 +1,4 @@
-from os import path, listdir
+from os import path, listdir, makedirs
 
 class FileHandler:
 
@@ -40,6 +40,9 @@ class DirectoryHandler:
 
 		self.dirname = dirname
 		self.files = []
+
+		if not path.exists(self.dirname):
+			makedirs(self.dirname)
 
 	def get_directory_filenames(self):
 

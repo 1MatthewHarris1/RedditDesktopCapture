@@ -29,7 +29,8 @@ class SettingsManager(threading.Thread):
 				self.textvariable = "" # StringVar(text)
 				self.entry.textvariable = self.textvariable
 				# print('text should be: {0}'.format(text))
-				self.entry.insert(0, text)
+				if text is not None:
+					self.entry.insert(0, text)
 
 		class CheckField:
 		
@@ -56,6 +57,7 @@ class SettingsManager(threading.Thread):
 			super().__init__(parent)
 
 			self.database = database
+			self.launch = False
 			self.settings_dict = settings_dict
 			self.sub_list = []
 			self.settings_list = []
@@ -197,7 +199,9 @@ class SettingsManager(threading.Thread):
 		def start(self):
 
 			self.save_profile_data()
-			print('passing control to reddit image scraper module')
+			# print('passing control to reddit image scraper module')
+			self.launch = True
+			self.master.destroy()
 
 	def run(self):
 
