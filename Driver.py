@@ -8,6 +8,7 @@ from RedditInterface import RedditInterface
 from JsonHandler import JsonHandler
 from Timer import Timer
 from GlobalData import *
+from ImageDriver import ImageHandler
 
 def main(argc, argv):
 
@@ -33,8 +34,9 @@ def main(argc, argv):
 		if sys.platform == 'darwin':
 			settings_manager.run()
 		elif sys.platform == 'win32':
-			settings_manager.start()
-			settings_manager.join()
+			# settings_manager.start()
+			# settings_manager.join()
+			settings_manager.run()
 		else:
 			print('Unknown platform. Exiting...')
 			sys.exit(1)
@@ -43,6 +45,11 @@ def main(argc, argv):
 
 	reddit_interface = RedditInterface(settings_dict = json_handler.json_data)
 	reddit_interface.get_images()
+
+	image_folder_location = downloaded_image_folder_location # 'C:/Users/Matthew/Desktop/RDC'
+	image_handler = ImageHandler(image_folder_location)
+	image_handler.flush_images_by_resolution()
+	image_handler.resize_images()
 
 	"""
 	timer = Timer(5)

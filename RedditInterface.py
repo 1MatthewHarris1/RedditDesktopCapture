@@ -18,14 +18,21 @@ class RedditInterface:
 		new_filename = ''
 		for word in filename.split():
 			new_filename = '{0}{1}'.format(new_filename, word)
-	
+
+		for x in range(len(new_filename)):
+			if new_filename[x] == '\\':
+				new_filename[x] = '_'
+
 		return new_filename
 
 	def get_images(self):
 	
 		dir_handler = DirectoryHandler(dirname = downloaded_image_folder_location)
 
-		limit = self.settings_dict['images_to_download'] / (len(self.settings_dict['subreddits']) - 1)
+		try:
+			limit = self.settings_dict['images_to_download'] / (len(self.settings_dict['subreddits']) - 1)
+		except ZeroDivisionError:
+			return 0
 
 		index = 0
 		for sub in self.settings_dict['subreddits']:
@@ -47,3 +54,5 @@ class RedditInterface:
 						print('index: {0} sub: {1} url: {2}'.format(index, sub, image_path))
 						with open(image_path, 'wb') as f:
 							f.write(requests.get(submission.url).content)
+
+		return index
