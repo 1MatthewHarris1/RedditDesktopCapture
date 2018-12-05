@@ -11,6 +11,7 @@ class SettingsManager(threading.Thread):
 		super().__init__()
 		self.settings_dict = settings_dict
 		self.database = database
+		self.launch = False
 
 	class Application(Frame):
 
@@ -52,12 +53,12 @@ class SettingsManager(threading.Thread):
 				self.label = label
 				
 
-		def __init__(self, parent = None, settings_dict = None, database = None):
+		def __init__(self, parent = None, settings_dict = None, database = None, settings_manager = None):
 			# always be sure to do this with tkinter child classes...
 			super().__init__(parent)
 
+			self.settings_manager = settings_manager
 			self.database = database
-			self.launch = False
 			self.settings_dict = settings_dict
 			self.sub_list = []
 			self.settings_list = []
@@ -93,6 +94,8 @@ class SettingsManager(threading.Thread):
 				elif element in ['download_interval', 'profile_name', 'max_scale_factor', 'chaos_tolerance',
 								 'images_to_download']:
 					self.add_text_field(text = d[element], label_text = element, padding = padding)
+				elif element == 'subreddits':
+					pass
 				else:
 					print('{0} has undefined behavior'.format(element))
 
@@ -181,7 +184,7 @@ class SettingsManager(threading.Thread):
 				subreddits.append(str(element.entry.get()))
 
 			self.settings_dict['profile_name'] = str(self.settings_list[0].entry.get())
-			self.settings_dict['center_image'] = self.settings_list[1].var
+			self.settings_dict['center_image'] = self.settings_list[1].state
 			self.settings_dict['mirror_image'] = self.settings_list[2].var
 			self.settings_dict['fill_voidspace'] = self.settings_list[3].var
 			self.settings_dict['fill_behavior']['solid_fill'] = self.settings_list[4].var
@@ -200,30 +203,13 @@ class SettingsManager(threading.Thread):
 
 			self.save_profile_data()
 			# print('passing control to reddit image scraper module')
-			self.launch = True
+			self.settings_manager.launch = True
 			self.master.destroy()
 
 	def run(self):
 
 		root = Tk()
-		app = self.Application(root, settings_dict = self.settings_dict, database = self.database) # Instantiate the application class
+		app = self.Application(root, settings_dict = self.settings_dict, database = self.database, settings_manager = self) # Instantiate the application class
 		# app.grid()
 		root.title("Reddit Desktop Capture")
 		root.mainloop()
-"""
-CREATE TABLE ProfileInfo
-(
-	profile_name	TEXT DEFAULT 'Default',
-	center_image	INT DEFAULT 0,
-	mirror_image	INT DEFAULT 0,
-	fill_voidspace	INT DEFAULT 0,
-	solid_fill		INT DEFAULT 0,
-	random_fill		INT DEFAULT 0,
-	smart_fill		INT DEFAULT 0,
-	max_scale_factor	REAL DEFAULT 1.7,
-	chaos_tolerance		INT DEFAULT 100,
-	images_to_download	INT DEFAULT 50,
-	download_interval	INT DEFAULT 86400
-);
-INSERT INTO ProfileInfo DEFAULT VALUES
-"""
