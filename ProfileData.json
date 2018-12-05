@@ -1,1 +1,1 @@
-{"subreddits": ["earthporn", "pics", ""], "profile_name": "Default", "center_image": 0, "mirror_image": 0, "fill_voidspace": 0, "fill_behavior": {"solid_fill": 0, "random_fill": 0, "smart_fill": 0}, "max_scale_factor": 1.7, "chaos_tolerance": 100, "images_to_download": 50, "download_interval": 86400}
+{"subreddits": [], "profile_name": "Default", "center_image": 1, "mirror_image": 0, "fill_voidspace": 1, "fill_behavior": {"solid_fill": 0, "random_fill": 0, "smart_fill": 0}, "max_scale_factor": 1.7, "chaos_tolerance": 100, "images_to_download": 50, "download_interval": 86400}

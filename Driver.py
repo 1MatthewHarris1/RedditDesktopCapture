@@ -28,6 +28,7 @@ def main(argc, argv):
 
 	settings_manager = SettingsManager(settings_dict = json_handler.json_data, database = json_handler)
 
+
 	if sys.platform in supported_platforms:
 		if sys.platform == 'darwin':
 			settings_manager.run()
@@ -37,6 +38,8 @@ def main(argc, argv):
 		else:
 			print('Unknown platform. Exiting...')
 			sys.exit(1)
+
+	print('json_handler data: {0}'.format(json_handler.json_data))
 
 	reddit_interface = RedditInterface(settings_dict = json_handler.json_data)
 	reddit_interface.get_images()

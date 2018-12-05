@@ -37,9 +37,11 @@ class SettingsManager(threading.Thread):
 		
 			def __init__(self, master = None, text = None, state = 0, padding = 0):
 				
-				self.var = state # IntVar(state)
+				self.var = IntVar()
 				self.padding = padding
 				self.button = Checkbutton(master, text = text, variable = self.var, onvalue = 1, offvalue = 0)
+				if state == 1:
+					self.button.select()
 
 		class TextField:
 
@@ -81,6 +83,8 @@ class SettingsManager(threading.Thread):
 			for element in self.settings_dict['subreddits']:
 				self.add_sub_field(text = element)
 
+			self.add_sub_field()
+
 			self.settings_dict_init(d = self.settings_dict)
 
 		# Make this examine the various fields and correlate them to a specific type. Behave according to type
@@ -90,7 +94,7 @@ class SettingsManager(threading.Thread):
 				if type(d[element]) is dict:
 					self.settings_dict_init(d = d[element], padding = padding + self.SUBFIELD_PADDING)
 				elif element in ['center_image', 'mirror_image', 'fill_voidspace', 'solid_fill', 'smart_fill', 'random_fill']:
-					self.add_checkbutton(text = element, padding = padding)
+					self.add_checkbutton(text = element, state = d[element], padding = padding)
 				elif element in ['download_interval', 'profile_name', 'max_scale_factor', 'chaos_tolerance',
 								 'images_to_download']:
 					self.add_text_field(text = d[element], label_text = element, padding = padding)
@@ -132,9 +136,9 @@ class SettingsManager(threading.Thread):
 
 			return
 
-		def add_checkbutton(self, text = None, padding = 0):
+		def add_checkbutton(self, text = None, state = 0, padding = 0):
 
-			new_checkbutton = self.CheckField(master = self, text = text, padding = padding)
+			new_checkbutton = self.CheckField(master = self, state = state, text = text, padding = padding)
 			self.settings_list.append(new_checkbutton)
 
 			return
@@ -184,12 +188,12 @@ class SettingsManager(threading.Thread):
 				subreddits.append(str(element.entry.get()))
 
 			self.settings_dict['profile_name'] = str(self.settings_list[0].entry.get())
-			self.settings_dict['center_image'] = self.settings_list[1].state
-			self.settings_dict['mirror_image'] = self.settings_list[2].var
-			self.settings_dict['fill_voidspace'] = self.settings_list[3].var
-			self.settings_dict['fill_behavior']['solid_fill'] = self.settings_list[4].var
-			self.settings_dict['fill_behavior']['random_fill'] = self.settings_list[5].var
-			self.settings_dict['fill_behavior']['smart_fill'] = self.settings_list[6].var
+			self.settings_dict['center_image'] = self.settings_list[1].var.get()
+			self.settings_dict['mirror_image'] = self.settings_list[2].var.get()
+			self.settings_dict['fill_voidspace'] = self.settings_list[3].var.get()
+			self.settings_dict['fill_behavior']['solid_fill'] = self.settings_list[4].var.get()
+			self.settings_dict['fill_behavior']['random_fill'] = self.settings_list[5].var.get()
+			self.settings_dict['fill_behavior']['smart_fill'] = self.settings_list[6].var.get()
 			self.settings_dict['max_scale_factor'] = float(self.settings_list[7].entry.get())
 			self.settings_dict['chaos_tolerance'] = int(self.settings_list[8].entry.get())
 			self.settings_dict['images_to_download'] = int(self.settings_list[9].entry.get())
