@@ -1,37 +1,38 @@
-"""
-import sys
-from SettingsManager import SettingsManager
-from GlobalData import *
-
-def main(argc, argv):
-	pass
-
-main(len(sys.argv), sys.argv)
-"""
-
 import sys
 import ctypes
 from os import listdir, makedirs, remove, getcwd
 from os.path import isfile, join, basename, exists
 from PIL import Image
-from win32api import GetSystemMetrics
 from math import floor
 from GlobalData import *
-# from SkinTones import skin_tones, skin_tone_tolerance
+
+if sys.platform in supported_platforms:
+	if sys.platform == 'darwin':
+		from AppKit import NSScreen
+		screen_width = NSScreen.mainScreen().frame().size.width
+		screen_height = NSScreen.mainScreen().frame().size.height
+	elif sys.platform == 'win32':
+		from win32api import GetSystemMetrics
+		screen_width = GetSystemMetrics(0)
+		screen_height = GetSystemMetrics(1)
+
 
 
 class ImageHandler:
-	MAX_SCALE_FACTOR = 1.7
+
 	image_filenames = []
 	image_dictionary = {}
 	image_folder_location = None
 	invalid_image_directory = None
 	wallpaper_image_directory = None
-	screen_width = GetSystemMetrics(0)
-	screen_height = GetSystemMetrics(1)
 	new_image_list = []
 
-	def __init__(self, image_folder_location):
+	def __init__(self, image_folder_location, settings_dict):
+
+		self.max_scale_factor = settings_dict['max_scale_factor']
+		self.settings_dict = settings_dict
+		self.screen_width = screen_width
+		self.screen_height = screen_height
 		self.image_folder_location = image_folder_location
 		self.invalid_image_directory = join(self.image_folder_location, 'InvalidImages')
 		self.wallpaper_image_directory = join(self.image_folder_location, 'Wallpapers')
@@ -101,30 +102,41 @@ class ImageHandler:
 			margin_direction = 'h'
 			margin_size = (voidspace_size[0] - image.size[0]) // 2
 			if margin_size >= 0:
-				image_position = ((new_image_size[0] // 2), voidspace_size[1])
+				image_position = (int((new_image_size[0] // 2)), int(voidspace_size[1]))
 				new_image.paste(image, image_position)
 				mirror_image = image.transpose(Image.FLIP_LEFT_RIGHT)
-				new_image.paste(mirror_image, (margin_size, voidspace_size[1]))
+				new_image.paste(mirror_image, (int(margin_size), int(voidspace_size[1])))
 				new_voidspace_size = margin_size
 			else:
-				image_position = ((voidspace_size[0] // 2), voidspace_size[1])
+				image_position = (int(voidspace_size[0] // 2), int(voidspace_size[1]))
 				new_image.paste(image, image_position)
-				new_voidspace_size = (new_image_size[0] - image.size[0]) // 2
+				new_voidspace_size = int((new_image_size[0] - image.size[0]) // 2)
 		else:
 			margin_direction = 'v'
-			margin_size = (voidspace_size[1] - image.size[1]) // 2
+			margin_size = int((int(voidspace_size[1]) - int(image.size[1])) // 2)
 			if margin_size >= 0:
-				image_position = (voidspace_size[0], (new_image_size[1] // 2))
+				image_position = (int(voidspace_size[0]), int((new_image_size[1] // 2)))
 				new_image.paste(image, image_position)
 				mirror_image = image.transpose(Image.FLIP_TOP_BOTTOM)
-				new_image.paste(mirror_image, (voidspace_size[0], margin_size))
+				new_image.paste(mirror_image, (int(voidspace_size[0]), int(margin_size)))
 				new_voidspace_size = margin_size
 			else:
-				image_position = (voidspace_size[0], (voidspace_size[1] // 2))
+				image_position = (int(voidspace_size[0]), int(voidspace_size[1] // 2))
 				new_image.paste(image, image_position)
-				new_voidspace_size = (new_image_size[0] - image.size[0]) // 2
+				new_voidspace_size = int((int(new_image_size[0]) - int(image.size[0])) // 2)
 
 		return new_image, new_voidspace_size, margin_direction
+
+	def center(self, image, new_image_size):
+
+		voidspace_size = ((int(int(self.screen_width) - int(image.size[0])) // 2), (int(int(self.screen_height) - int(image.size[1])) // 2))
+		new_image = Image.new('RGB', new_image_size)
+
+		color = (0, 0, 0)
+		image_position = (int(voidspace_size[0]), int(voidspace_size[1]))
+		new_image.paste(image, image_position)
+
+		return new_image
 
 	def put_margin_data(self, image, start_index, margin_size, margin_direction, data):
 
@@ -178,23 +190,7 @@ class ImageHandler:
 
 	def resize_images(self):
 
-		"""
-		def is_skin_color(color):
-
-			color_is_skin_color = False
-			for tone in skin_tones:
-				tone_is_skin_color = True
-				for x in range(3):
-					if not self.is_between(color[x], tone[x], skin_tone_tolerance[x]):
-						tone_is_skin_color = False
-				if tone_is_skin_color:
-					color_is_skin_color = True
-					break
-
-			return color_is_skin_color
-		"""
-
-		new_image_size = (self.screen_width, self.screen_height)
+		new_image_size = (int(self.screen_width), int(self.screen_height))
 
 		for entry in self.image_dictionary:
 			image = self.image_dictionary[entry]
@@ -206,47 +202,16 @@ class ImageHandler:
 								floor(image_minimum_multiplication_factor * image.size[1]))
 
 				image = image.resize(image_resize)
-				new_image, voidspace_size, margin_direction = self.mirror_and_center(image, new_image_size)
-
-				"""
-				margin_1_data = self.get_margin_data(image, 0, voidspace_size, margin_direction)
-				margin_2_data = self.get_margin_data(image, voidspace_size, voidspace_size, margin_direction)
-
-				new_image = self.put_margin_data(new_image, voidspace_size, voidspace_size, margin_direction, margin_1_data)
-				new_image = self.put_margin_data(new_image, voidspace_size + image.size[0], voidspace_size, margin_direction, margin_2_data)
-				"""
+				if self.settings_dict['mirror_image'] == 1:
+					new_image, voidspace_size, margin_direction = self.mirror_and_center(image, new_image_size)
+				elif self.settings_dict['center_image'] == 1:
+					new_image = self.center(image, new_image_size)
 
 				new_filename = str(len(self.new_image_list)) + self.is_valid_image_file(entry)
 				new_filename = join(self.wallpaper_image_directory, new_filename)
 				self.create_directory(self.wallpaper_image_directory)
 				self.new_image_list.append(new_image)
 				new_image.save(new_filename)
-
-	"""
-	def relocate_originals(self):
-
-		slated_for_removal = []
-		for entry in self.image_dictionary:
-			if isfile(entry):
-				self.create_directory(self.original_image_directory)
-				new_file_location = join(self.original_image_directory, basename(entry))
-				try:
-					self.image_dictionary[entry].save(new_file_location)
-					print('saved to: {0}'.format(new_file_location))
-				except Exception as exc:
-					print(exc, '{0}'.format(new_file_location))
-
-				try:
-					self.image_dictionary[entry].close()
-					slated_for_removal.append(entry)
-				except Exception as exc:
-					print(exc, '{0}'.format(entry))
-
-		for entry in slated_for_removal:
-			del self.image_dictionary[entry]
-			remove(entry)
-			print('removed: {0}'.format(entry))
-	"""
 
 	def flush_images_by_resolution(self):
 
@@ -260,7 +225,7 @@ class ImageHandler:
 
 			print(output_str)
 
-			if scale_factor > self.MAX_SCALE_FACTOR:
+			if scale_factor > self.max_scale_factor:
 				new_file_location = join(self.invalid_image_directory, basename(entry))
 				if isfile(entry):
 					self.create_directory(self.invalid_image_directory)
@@ -279,15 +244,3 @@ class ImageHandler:
 			remove(entry)
 			print('removed: {0}'.format(entry))
 
-		"""
-	def run(self):
-
-		# image_folder_location = getcwd()
-		# image_folder_location = input('Image Folder Location: ')
-		image_folder_location = downloaded_image_folder_location # 'C:/Users/Matthew/Desktop/RDC'
-		image_handler = ImageHandler(image_folder_location)
-		image_handler.flush_images_by_resolution()
-		image_handler.resize_images()
-		# image_handler.relocate_originals()
-		# sys.exit(0)
-		"""

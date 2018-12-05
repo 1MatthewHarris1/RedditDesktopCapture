@@ -41,15 +41,14 @@ def main(argc, argv):
 			print('Unknown platform. Exiting...')
 			sys.exit(1)
 
-	print('json_handler data: {0}'.format(json_handler.json_data))
+	if settings_manager.launch:
+		reddit_interface = RedditInterface(settings_dict = json_handler.json_data)
+		reddit_interface.get_images()
 
-	reddit_interface = RedditInterface(settings_dict = json_handler.json_data)
-	reddit_interface.get_images()
-
-	image_folder_location = downloaded_image_folder_location # 'C:/Users/Matthew/Desktop/RDC'
-	image_handler = ImageHandler(image_folder_location)
-	image_handler.flush_images_by_resolution()
-	image_handler.resize_images()
+		image_folder_location = downloaded_image_folder_location
+		image_handler = ImageHandler(image_folder_location, json_handler.json_data)
+		image_handler.flush_images_by_resolution()
+		image_handler.resize_images()
 
 	"""
 	timer = Timer(5)

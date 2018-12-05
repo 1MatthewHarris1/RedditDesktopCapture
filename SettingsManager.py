@@ -34,14 +34,45 @@ class SettingsManager(threading.Thread):
 					self.entry.insert(0, text)
 
 		class CheckField:
+
+			DISABLED = 'disabled'
+			NORMAL = 'normal'
 		
 			def __init__(self, master = None, text = None, state = 0, padding = 0):
 				
 				self.var = IntVar()
 				self.padding = padding
-				self.button = Checkbutton(master, text = text, variable = self.var, onvalue = 1, offvalue = 0)
+				self.master = master
+				self.text = text
+				command = lambda name = text:self.check_button_states(name)
+				self.button = Checkbutton(master, command = command, text = text, variable = self.var, onvalue = 1, offvalue = 0)
 				if state == 1:
 					self.button.select()
+
+			def check_button_states(self, name):
+				
+				if self.master.settings_list[3].var.get() == 1:
+					self.master.settings_list[4].button['state'] = self.NORMAL
+					self.master.settings_list[5].button['state'] = self.NORMAL
+					self.master.settings_list[6].button['state'] = self.NORMAL
+
+					if name == 'solid_fill':
+						self.master.settings_list[5].button.deselect()
+						self.master.settings_list[6].button.deselect()
+					elif name == 'random_fill':
+						self.master.settings_list[4].button.deselect()
+						self.master.settings_list[6].button.deselect()
+					elif name == 'smart_fill':
+						self.master.settings_list[4].button.deselect()
+						self.master.settings_list[5].button.deselect()
+					else:
+						pass
+						
+				else:
+					self.master.settings_list[4].button['state'] = self.DISABLED
+					self.master.settings_list[5].button['state'] = self.DISABLED
+					self.master.settings_list[6].button['state'] = self.DISABLED
+					
 
 		class TextField:
 
@@ -83,7 +114,7 @@ class SettingsManager(threading.Thread):
 			for element in self.settings_dict['subreddits']:
 				self.add_sub_field(text = element)
 
-			self.add_sub_field()
+			# self.add_sub_field()
 
 			self.settings_dict_init(d = self.settings_dict)
 
@@ -94,7 +125,11 @@ class SettingsManager(threading.Thread):
 				if type(d[element]) is dict:
 					self.settings_dict_init(d = d[element], padding = padding + self.SUBFIELD_PADDING)
 				elif element in ['center_image', 'mirror_image', 'fill_voidspace', 'solid_fill', 'smart_fill', 'random_fill']:
-					self.add_checkbutton(text = element, state = d[element], padding = padding)
+					b = self.add_checkbutton(text = element, state = d[element], padding = padding)
+
+					if element == 'smart_fill':
+						b.check_button_states(None)
+
 				elif element in ['download_interval', 'profile_name', 'max_scale_factor', 'chaos_tolerance',
 								 'images_to_download']:
 					self.add_text_field(text = d[element], label_text = element, padding = padding)
@@ -141,7 +176,7 @@ class SettingsManager(threading.Thread):
 			new_checkbutton = self.CheckField(master = self, state = state, text = text, padding = padding)
 			self.settings_list.append(new_checkbutton)
 
-			return
+			return new_checkbutton
 
 		def redraw(self):
 
@@ -206,7 +241,6 @@ class SettingsManager(threading.Thread):
 		def start(self):
 
 			self.save_profile_data()
-			# print('passing control to reddit image scraper module')
 			self.settings_manager.launch = True
 			self.master.destroy()
 
