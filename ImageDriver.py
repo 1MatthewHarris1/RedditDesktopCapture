@@ -5,7 +5,9 @@ from os.path import isfile, join, basename, exists
 from PIL import Image
 from math import floor
 from GlobalData import *
+from webcolors import hex_to_rgb
 
+# Get the screen resolution (depending on platform)
 if sys.platform in supported_platforms:
 	if sys.platform == 'darwin':
 		from AppKit import NSScreen
@@ -17,7 +19,10 @@ if sys.platform in supported_platforms:
 		screen_height = GetSystemMetrics(1)
 
 
-
+"""
+Class Name:	ImageHandler
+Responsibility:	To handle all operations of manipulating images
+"""
 class ImageHandler:
 
 	image_filenames = []
@@ -27,6 +32,12 @@ class ImageHandler:
 	wallpaper_image_directory = None
 	new_image_list = []
 
+	"""
+	Function Name:	__init__
+	Purpose:	Class Constructor
+	Arguments:	image_folder_location:	The location of the image source folder
+			settings_dict:	A dictionary of the user settings
+	"""
 	def __init__(self, image_folder_location, settings_dict):
 
 		self.max_scale_factor = settings_dict['max_scale_factor']
@@ -39,6 +50,12 @@ class ImageHandler:
 		self.get_directory_filenames()
 		self.open_images()
 
+	"""
+	Function Name:	create_directory
+	Purpose:	Create a new directory for the ImageDriver
+	Arguments:	directory_name:	The name of the new directory to be created
+	"""
+	# NOTE: This should be replaced with the DirectoryHandler object
 	@staticmethod
 	def create_directory(directory_name):
 		try:
@@ -47,6 +64,11 @@ class ImageHandler:
 		except OSError:
 			print('Error creating directory "{0}"'.format(directory_name))
 
+	"""
+	Function Name:	is_valid_image_file
+	Purpose:	Determine if the given file is a valid image file
+	Arguments:	filename:	The name of the file to check
+	"""
 	@staticmethod
 	def is_valid_image_file(filename):
 
@@ -66,6 +88,11 @@ class ImageHandler:
 
 		return False
 
+	"""
+	File Name:	get_directory_filenames
+	Purpose:	Get all filenames in the given directory
+	"""
+	# NOTE: This should be replaced with the DirectoryHandler object
 	def get_directory_filenames(self):
 
 		directory = self.image_folder_location
@@ -79,12 +106,21 @@ class ImageHandler:
 		else:
 			print('The directory: "{0}" does not seem to exist'.format(directory))
 
+	"""
+	Function Name:	open_images
+	Purpose:	Open all images in the image_filenames list
+	"""
 	def open_images(self):
 
 		for filename in self.image_filenames:
 			image = Image.open(filename)
 			self.image_dictionary[filename] = image
 
+	"""
+	Function Name:	ge_minimum_scale_factor
+	Purpose:	Ascertain the minimum scale factor required to resize the image to fit the screen
+	Arguments:	image_resolution_tuple:	A tuple containing the screen width and height
+	"""
 	def get_minimum_scale_factor(self, image_resolution_tuple):
 		width_div_factor = self.screen_width / image_resolution_tuple[0]
 		height_div_factor = self.screen_height / image_resolution_tuple[1]
@@ -92,12 +128,23 @@ class ImageHandler:
 
 		return min_scale_factor
 
-	def mirror_and_center(self, image, new_image_size):
+	"""
+	Function Name:	mirror_and_center
+	Purpose:	Mirror and center the given image
+	Arguments:	image:	The image to mirror and center
+			new_image_size:	The dimensions of the new image (to be created)
+			color:	The color value to set the voidspace if the settings enable solid_fill
+	"""
+	def mirror_and_center(self, image, new_image_size, color = (0, 0, 0)):
 
+		# Calculate size of voidspace
 		voidspace_size = (self.screen_width - image.size[0], self.screen_height - image.size[1])
-		new_image = Image.new('RGB', new_image_size)
 
-		color = (0, 0, 0)
+		# Create the new image in the appropriate color
+		new_image = Image.new('RGB', new_image_size, color = color)
+
+		# TODO: Redundant code here, try to optimize
+		# Horizontal voidspace
 		if voidspace_size[0] > voidspace_size[1]:
 			margin_direction = 'h'
 			margin_size = (voidspace_size[0] - image.size[0]) // 2
@@ -111,6 +158,7 @@ class ImageHandler:
 				image_position = (int(voidspace_size[0] // 2), int(voidspace_size[1]))
 				new_image.paste(image, image_position)
 				new_voidspace_size = int((new_image_size[0] - image.size[0]) // 2)
+		# Vertical voidspace
 		else:
 			margin_direction = 'v'
 			margin_size = int((int(voidspace_size[1]) - int(image.size[1])) // 2)
@@ -127,17 +175,27 @@ class ImageHandler:
 
 		return new_image, new_voidspace_size, margin_direction
 
-	def center(self, image, new_image_size):
+	"""
+	Function Name:	center
+	Purpose:	Center the given image but do not mirror
+	Arguments:	image:	The image to be centered
+			new_image_size:	The size of the new image to be generated
+			color:	The color of the voidspace is solid_fill is enabled in the profile settings
+	"""
+	def center(self, image, new_image_size, color = (0, 0, 0)):
 
 		voidspace_size = ((int(int(self.screen_width) - int(image.size[0])) // 2), (int(int(self.screen_height) - int(image.size[1])) // 2))
-		new_image = Image.new('RGB', new_image_size)
+		new_image = Image.new('RGB', new_image_size, color = color)
 
-		color = (0, 0, 0)
 		image_position = (int(voidspace_size[0]), int(voidspace_size[1]))
 		new_image.paste(image, image_position)
 
 		return new_image
 
+	"""
+	Function Name:	put_margin_data
+	Purpose:	Put data into the margins of an image
+	"""
 	def put_margin_data(self, image, start_index, margin_size, margin_direction, data):
 
 		if margin_direction == 'h':
@@ -160,6 +218,10 @@ class ImageHandler:
 		print('returning image')
 		return image
 
+	"""
+	FunctionName:	get_margin_data
+	Purpose:	Get data from the image margin
+	"""
 	def get_margin_data(self, image, start_index, margin_size, margin_direction):
 
 		data_list = list(image.getdata())
@@ -188,9 +250,18 @@ class ImageHandler:
 
 		return color_list
 
+	"""
+	Function Name:	resize_images
+	Purpose:	Resize images according to resolution and perform actions specified by user settings
+	"""
 	def resize_images(self):
 
 		new_image_size = (int(self.screen_width), int(self.screen_height))
+
+		voidspace_color = (0, 0, 0)
+		if self.settings_dict['fill_voidspace'] == 1:
+			if self.settings_dict['fill_behavior']['solid_fill'] == 1:
+				voidspace_color = hex_to_rgb(self.settings_dict['fill_color'])
 
 		for entry in self.image_dictionary:
 			image = self.image_dictionary[entry]
@@ -203,9 +274,11 @@ class ImageHandler:
 
 				image = image.resize(image_resize)
 				if self.settings_dict['mirror_image'] == 1:
-					new_image, voidspace_size, margin_direction = self.mirror_and_center(image, new_image_size)
+					new_image, voidspace_size, margin_direction = self.mirror_and_center(image, new_image_size, color = voidspace_color)
 				elif self.settings_dict['center_image'] == 1:
-					new_image = self.center(image, new_image_size)
+					new_image = self.center(image, new_image_size, color = voidspace_color)
+				else:
+					new_image = image
 
 				new_filename = str(len(self.new_image_list)) + self.is_valid_image_file(entry)
 				new_filename = join(self.wallpaper_image_directory, new_filename)
@@ -213,6 +286,10 @@ class ImageHandler:
 				self.new_image_list.append(new_image)
 				new_image.save(new_filename)
 
+	"""
+	Function Name:	flush_images_by_resolution
+	Purpose:	Remove images that fail the resolution check
+	"""
 	def flush_images_by_resolution(self):
 
 		slated_for_removal = []

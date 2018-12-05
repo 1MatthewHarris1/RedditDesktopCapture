@@ -1,4 +1,5 @@
-from tkinter import Frame, Button, Entry, Tk, Checkbutton, Label, StringVar, IntVar, W as WEST, E as EAST
+from tkinter import Frame, Button, Entry, Tk, Checkbutton, Label, StringVar, IntVar, W as WEST, E as EAST, colorchooser
+# from webcolors import rgb_to_name
 import threading
 
 """
@@ -100,6 +101,7 @@ class SettingsManager(threading.Thread):
 			self.start_button = None
 			self.save_profile_button = None
 			self.quit_button = None
+			self.color_button = None
 
 			self.initialize_widgets()
 
@@ -111,10 +113,15 @@ class SettingsManager(threading.Thread):
 			self.save_profile_button = Button(self, text = 'Save Profile', command = self.save_profile_data, font = ('times', 18))
 			self.quit_button = Button(self, text = 'Exit', command = self.master.destroy, font = ('times', 18))
 
+			# color = rgb_to_name(self.settings_dict['fill_color'], spec = 'html4')
+			color = self.settings_dict['fill_color']
+			self.color_button = Button(self, text = '', activeforeground = color, highlightbackground = color, command = self.get_color, width = 5)
+
 			for element in self.settings_dict['subreddits']:
 				self.add_sub_field(text = element)
 
-			# self.add_sub_field()
+			if len(self.sub_list) < 1:
+				self.add_sub_field()
 
 			self.settings_dict_init(d = self.settings_dict)
 
@@ -133,13 +140,20 @@ class SettingsManager(threading.Thread):
 				elif element in ['download_interval', 'profile_name', 'max_scale_factor', 'chaos_tolerance',
 								 'images_to_download']:
 					self.add_text_field(text = d[element], label_text = element, padding = padding)
-				elif element == 'subreddits':
+				elif element == 'subreddits' or element == 'fill_color':
 					pass
 				else:
 					print('{0} has undefined behavior'.format(element))
 
 			self.redraw()
 			return
+
+		def get_color(self):
+
+			color = colorchooser.askcolor(parent = self)
+			if color is not None:
+				self.settings_dict['fill_color'] = color[1]
+				self.redraw()
 
 		def add_text_field(self, text = None, label_text = None, padding = 0):
 
@@ -202,6 +216,11 @@ class SettingsManager(threading.Thread):
 				
 				if type(self.settings_list[x]) == self.CheckField:
 					self.settings_list[x].button.grid(row = row, column = 0, sticky = WEST, padx = self.settings_list[x].padding)
+					if x == 4:
+						self.color_button.grid(row = row, column = 1, sticky = WEST)
+						# color = rgb_to_name(self.settings_dict['fill_color'], spec = 'html4')
+						color = self.settings_dict['fill_color']
+						self.color_button.configure(highlightbackground = color, activeforeground = color)
 				else:
 					self.settings_list[x].entry.grid(row = row, column = 0, sticky = WEST, padx = self.settings_list[x].padding)
 					self.settings_list[x].label.grid(row = row, column = 1, sticky = WEST, padx = self.settings_list[x].padding)
