@@ -84,3 +84,36 @@ class JsonHandler:
 		self.set_file_handler_access_type('wb')
 		self.file_handler.file.write(bytes(json.dumps(self.json_data), 'utf-8'))
 		self.file_handler.close_file()
+
+if __name__ == '__main__':
+
+	fields = [	'subreddits',
+			'profile_name',
+			'center_image',
+			'mirror_image',
+			'fill_voidspace',
+			'fill_behavior',
+			'fill_color',
+			'max_scale_factor',
+			'chaos_tolerance',
+			'images_to_download',
+			'download_interval']
+
+	err = False
+	json_handler = JsonHandler()
+	for element in json_handler.json_data:
+		if element not in fields:
+			err = True
+
+	if err:
+		print('Unknown field in database')
+		print('Test Failed')
+		exit(1)
+	
+	print('Test Passed')
+	exit(0)
+
+
+
+
+

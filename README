@@ -1,0 +1,35 @@
+Reddit Desktop Capture (RDC) is a program for MacOSX which collects images
+from the social networking site "Reddit" and modifies them for use as
+desktop background images. 
+
+RDC has not been thoroughly tested on Windows and may not behave predictably.
+Currently RDC is built to run on MacOSX exclusively. 
+
+Required Packages:
+
+	Pillow
+	webcolors
+	numpy
+	AppKit
+
+RDC will collect the images from the user specified subreddits and modify them
+according to the user settings. Once modified, these images will be stored in
+the local directory. The RDC directory hierarchy is as follows:
+
+	Downloaded/ 		<- Contains base images that were downloaded
+	Downloaded/Wallpapers/	<- Contains formatted images
+	Downlaoded/Invalid/ 	<- Contains images that are invalid by resolution
+
+When in the settings menu, pressing "Save Profile" button will save the current
+state of the user settings. When the program is closed and reopened, the settings
+will be the same as when the user left them. Launching the program will
+automatically save the profile settings. 
+
+The "Download Interval" setting currently has no function as the associated 
+functionality of setting a system timer and service was deemed too far outside the
+scope of the project. The setting will, however, still be "remembered" between
+sessions provided the user saves the profile before exiting.
+
+The "Profile Name" setting currently has no function but will in the future be used
+to distinguish between preset profile configurations. This value will also be
+"remembered" between sessions. 

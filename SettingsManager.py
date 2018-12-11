@@ -1,15 +1,16 @@
 from tkinter import Frame, Button, Entry, Tk, Checkbutton, Label, StringVar, IntVar, W as WEST, E as EAST, colorchooser
 # from webcolors import rgb_to_name
-import threading
+# import threading
 
 """
 As it uses Tkinter, SettingsManager runs
 cleaner if it utilizes its own thread
 """
-class SettingsManager(threading.Thread):
+#class SettingsManager(threading.Thread):
+class SettingsManager:
 
 	def __init__(self, settings_dict = None, database = None):
-		super().__init__()
+		# super().__init__()
 		self.settings_dict = settings_dict
 		self.database = database
 		self.launch = False

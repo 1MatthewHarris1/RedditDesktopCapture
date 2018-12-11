@@ -1,5 +1,7 @@
 import sys
 import ctypes
+import numpy as np
+import random
 from os import listdir, makedirs, remove, getcwd
 from os.path import isfile, join, basename, exists
 from PIL import Image
@@ -250,6 +252,42 @@ class ImageHandler:
 
 		return color_list
 
+	def get_frequent_image_color(self, image):
+
+		data = image.getdata()
+		data_dict = {}
+		max_access = 0
+		max_color = None
+		for element in data:
+			try:
+				data_dict[element] += 1
+				if data_dict[element] > max_access:
+					max_access = data_dict[element]
+					max_color = element
+
+			except KeyError:
+				data_dict[element] = 1
+
+		return max_color
+
+	"""
+	Function Name:	get_image_chaos_interval
+	Purpose:	Determine how chaotic an image is (returns image entropy)
+	Arguments:	image:	The image to be analyzed
+	Notes:		The logic for this method was found here: https://www.hdm-stuttgart.de/~maucher/Python/MMCodecs/html/basicFunctions.html
+	"""
+	def get_image_chaos_interval(self, image):
+
+		signal = image.getdata()
+		lensig = len(signal)
+		symset=list(set(signal))
+		numsym=len(symset)
+		propab=[np.size(signal[signal==i])/(1.0*lensig) for i in symset]
+		ent=np.sum([p*np.log2(1.0/p) for p in propab])
+		
+		return ent
+
+
 	"""
 	Function Name:	resize_images
 	Purpose:	Resize images according to resolution and perform actions specified by user settings
@@ -257,14 +295,23 @@ class ImageHandler:
 	def resize_images(self):
 
 		new_image_size = (int(self.screen_width), int(self.screen_height))
+		smart_fill = False
+		random_fill = False
+		chaos_tolerance = self.settings_dict['chaos_tolerance']
 
 		voidspace_color = (0, 0, 0)
 		if self.settings_dict['fill_voidspace'] == 1:
 			if self.settings_dict['fill_behavior']['solid_fill'] == 1:
 				voidspace_color = hex_to_rgb(self.settings_dict['fill_color'])
+			elif self.settings_dict['fill_behavior']['smart_fill'] == 1:
+				smart_fill = True
+			elif self.settings_dict['fill_behavior']['random_fill'] == 1:
+				random_fill = True
+			
 
 		for entry in self.image_dictionary:
 			image = self.image_dictionary[entry]
+			image_entropy = 0
 
 			if self.screen_width != image.size[0] and self.screen_height != image.size[1]:
 				print('Resizing "{0}"'.format(entry))
@@ -272,19 +319,32 @@ class ImageHandler:
 				image_resize = (floor(image_minimum_multiplication_factor * image.size[0]), \
 								floor(image_minimum_multiplication_factor * image.size[1]))
 
-				image = image.resize(image_resize)
-				if self.settings_dict['mirror_image'] == 1:
-					new_image, voidspace_size, margin_direction = self.mirror_and_center(image, new_image_size, color = voidspace_color)
-				elif self.settings_dict['center_image'] == 1:
-					new_image = self.center(image, new_image_size, color = voidspace_color)
-				else:
-					new_image = image
+				if smart_fill:
+					voidspace_color = self.get_frequent_image_color(image)
+				elif random_fill:
+					voidspace_color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
 
-				new_filename = str(len(self.new_image_list)) + self.is_valid_image_file(entry)
-				new_filename = join(self.wallpaper_image_directory, new_filename)
-				self.create_directory(self.wallpaper_image_directory)
-				self.new_image_list.append(new_image)
-				new_image.save(new_filename)
+				image_too_chaotic = False
+				if chaos_tolerance != 100:
+					image_entropy = self.get_image_chaos_interval(image)
+					tolerance = chaos_tolerance / 10
+					if image_entropy > tolerance:
+						image_too_chaotic = True
+
+				if not image_too_chaotic:
+					image = image.resize(image_resize)
+					if self.settings_dict['mirror_image'] == 1:
+						new_image, voidspace_size, margin_direction = self.mirror_and_center(image, new_image_size, color = voidspace_color)
+					elif self.settings_dict['center_image'] == 1:
+						new_image = self.center(image, new_image_size, color = voidspace_color)
+					else:
+						new_image = image
+
+					new_filename = str(len(self.new_image_list)) + self.is_valid_image_file(entry)
+					new_filename = join(self.wallpaper_image_directory, new_filename)
+					self.create_directory(self.wallpaper_image_directory)
+					self.new_image_list.append(new_image)
+					new_image.save(new_filename)
 
 	"""
 	Function Name:	flush_images_by_resolution
