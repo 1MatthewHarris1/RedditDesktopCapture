@@ -65,31 +65,50 @@ class RedditInterface:
 			er = False
 			try:
 				submission_set = self.reddit.subreddit(sub).hot(limit = limit)
-			except TypeError:
+			except:
 				er = True
 				
 			# If there were no errors
 			if er is False and sub != '':
-
-				# For each submission
-				for submission in submission_set:
-
-					# Create a new path for the image
-					image_path = path.join(downloaded_image_folder_location, self.clean_filename(submission.title))
-
-					# Retain the image extension
-					extension = pathlib.Path(submission.url).suffix
-		
-					# If the extension is valid
-					if extension[1:] in valid_image_extensions:
-
-						# Complete the image path
-						image_path = '{0}{1}'.format(image_path, extension)
-						index += 1
-						print('index: {0} sub: {1} url: {2}'.format(index, sub, image_path))
-
-						# Open and write the image to a file
-						with open(image_path, 'wb') as f:
-							f.write(requests.get(submission.url).content)
-
+	
+				try:
+					# For each submission
+					for submission in submission_set:
+	
+						# Create a new path for the image
+						image_path = path.join(downloaded_image_folder_location, self.clean_filename(submission.title))
+	
+						# Retain the image extension
+						extension = pathlib.Path(submission.url).suffix
+			
+						# If the extension is valid
+						if extension[1:] in valid_image_extensions:
+	
+							# Complete the image path
+							image_path = '{0}{1}'.format(image_path, extension)
+							index += 1
+							print('index: {0} sub: {1} url: {2}'.format(index, sub, image_path))
+	
+							# Open and write the image to a file
+							try:
+								with open(image_path, 'wb') as f:
+									f.write(requests.get(submission.url).content)
+							except FileNotFoundError:
+								index -= 1
+				except:
+					pass
+	
 		return index
+
+if __name__ == '__main__':
+	
+	reddit_interface = RedditInterface()
+
+	if reddit_interface.reddit is None:
+		print('RedditInterface did not validate creditials properly')	
+		print('Test Failed')
+		exit(1)
+
+	print('RedditInterface validated credentials properly')
+	print('Test Passed')	
+	exit(0)

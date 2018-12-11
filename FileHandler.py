@@ -1,4 +1,4 @@
-from os import path, listdir, makedirs
+from os import path, listdir, makedirs, remove
 
 """
 Class Name:	FileHandler
@@ -42,6 +42,7 @@ class FileHandler:
 			r = True
 		except IOError as e:
 			print("IOError({0}): {1}".format(e.errno, e.strerror))
+			# pass
 		except Exception as e:
 			print("Unknown Error in FileHandler")
 		
@@ -85,3 +86,37 @@ class DirectoryHandler:
 				filename = path.join(self.dirname, file)
 				if path.isfile(filename):
 					self.files.append(FileHandler(filename))
+
+if __name__ == '__main__':
+
+	test_filename = 'test_file.txt'
+	file_handler = FileHandler(test_filename, access_type = 'w')
+
+	print('Attempted to open file "{0}" as existing file (should not exist)')
+	if not file_handler.open_existing_file():
+		print('Open failed (that\'s good!')
+	else:
+		print('Open succeeded... Ensure that file "{0}" does not exist and try again')
+		print('Test Failed')
+		exit(1)
+
+	print('Attempting to open file "{0}" as new file')
+	if file_handler.open_new_file():
+		print('Open succeeded (that\'s good!')
+		print('Attempting to remove test file')
+		try:
+			remove(test_filename)
+		except:
+			print('Removal failed...')
+			print('Test failed')
+			exit(1)
+	else:
+		print('Open failed...')
+		print('Test failed')
+		exit(1)
+
+	print('Test succeeded')
+	exit(0)
+
+
+
